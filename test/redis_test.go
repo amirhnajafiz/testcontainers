@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/amirhnajafiz/testcontainers/pkg/storage/redis"
-	redisSKD "github.com/go-redis/redis/v9"
 )
 
 func TestRedisContainer(t *testing.T) {
@@ -27,14 +25,11 @@ func TestRedisContainer(t *testing.T) {
 		return
 	}
 
-	redisClient := redisSKD.NewClient(&redisSKD.Options{
-		Addr: redisConnection,
-	})
+	rc := redis.NewStorage(redisConnection)
 
-	redisClient.Set(ctx, "my-redis", "some value", time.Second*60)
+	rc.Put("my-key", "my-value")
 
-	v := redisClient.Get(ctx, "my-redis")
-	if v.String() != "some value" {
-		t.Error(errors.New("redis container failed"))
+	if rc.Get("my-key") != "my-value" {
+		t.Error(errors.New("redis container operation failed"))
 	}
 }

@@ -10,9 +10,13 @@ type Storage struct {
 	connection *redis.Client
 }
 
-func NewStorage(conn *redis.Client) Storage {
+func NewStorage(conn string) Storage {
+	client := redis.NewClient(&redis.Options{
+		Addr: conn,
+	})
+
 	return Storage{
-		connection: conn,
+		connection: client,
 	}
 }
 
