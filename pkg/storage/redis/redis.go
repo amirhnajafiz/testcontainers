@@ -21,3 +21,11 @@ func (s *Storage) Put(key, value string) {
 
 	s.connection.Set(ctx, key, value, 0)
 }
+
+func (s *Storage) Get(key string) string {
+	ctx := context.Background()
+
+	v := s.connection.Get(ctx, key)
+
+	return v.String()
+}
