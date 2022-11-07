@@ -8,9 +8,13 @@ import (
 	"github.com/amirhnajafiz/testcontainers/pkg/storage/redis"
 )
 
+// TestRedisContainer
+// creating a redis container by building one and
+// send requests to redis connections.
 func TestRedisContainer(t *testing.T) {
 	ctx := context.Background()
 
+	// creating a new container.
 	redisC, err := redis.CreateRedisContainer()
 	if err != nil {
 		t.Error(err)
@@ -18,6 +22,7 @@ func TestRedisContainer(t *testing.T) {
 		return
 	}
 
+	// get container connection.
 	redisConnection, err := redisC.Endpoint(ctx, "")
 	if err != nil {
 		t.Error(err)
@@ -25,8 +30,10 @@ func TestRedisContainer(t *testing.T) {
 		return
 	}
 
+	// creating a new storage
 	rc := redis.NewStorage(redisConnection)
 
+	// testing storage
 	rc.Put("my-key", "my-value")
 
 	if rc.Get("my-key") != "my-value" {
