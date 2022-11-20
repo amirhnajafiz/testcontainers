@@ -11,59 +11,90 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-const (
-	// nats docker image information
-	natsImageName = "nats"
-	natsImageTag  = "latest"
+type natsContainer struct {
+	testcontainers.Container
+	URI string
+}
 
-	// nats testing parameters
-	natsTopic = "some-private-key"
-	natsValue = "55#ou8aAApo#e9kkd"
-)
-
-// createRedisContainer
-// generates a new nats' container.
-func createNatsContainer(ctx context.Context) (testcontainers.Container, error) {
-	// container request
+// setupNats
+// generates a new nats cluster container.
+func setupNats(ctx context.Context) (*natsContainer, error) {
+	// container build request
 	req := testcontainers.ContainerRequest{
-		Image:        natsImageName + ":" + natsImageTag,
+		Image:        "nats:latest",
 		ExposedPorts: []string{"4222/tcp"},
 		WaitingFor:   wait.ForLog("Listening for client connections"),
 	}
 
-	// creating a new redis container
-	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	// building a generic container
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("building generic container failed: %v", err)
+	}
+
+	// mapped port
+	mappedPort, err := container.MappedPort(ctx, "4222")
+	if err != nil {
+		return nil, fmt.Errorf("getting mapped port failed: %v", err)
+	}
+
+	// getting the container ip
+	hostIP, err := container.Host(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting host ip failed: %v", err)
+	}
+
+	// generating the nats cluster uri
+	uri := fmt.Sprintf("nats://%s:%s", hostIP, mappedPort.Port())
+
+	// creating a new nats container
+	return &natsContainer{Container: container, URI: uri}, nil
 }
 
 // TestNatsContainer
 // testing nats container.
 func TestNatsContainer(t *testing.T) {
+	// checking test flag
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	// nats cluster testing parameters
+	const (
+		natsTopic = "some-private-key"
+		natsValue = "55#ou8aApo#e9kkd"
+	)
+
 	// creating a new context
 	ctx := context.Background()
 
 	// creating nats container
-	natsContainer, err := createNatsContainer(ctx)
+	container, err := setupNats(ctx)
 	if err != nil {
 		t.Error(fmt.Errorf("create nats container failed:\n\t%v\n", err))
 
 		return
 	}
 
-	// getting nats connection
-	natsConnection, err := natsContainer.Endpoint(ctx, "")
-	if err != nil {
-		t.Error(fmt.Errorf("getting nats connection failed:\n\t%v\n", err))
+	// cleaning container after test is complete
+	t.Cleanup(func() {
+		t.Log("terminating container")
 
-		return
-	}
+		if er := container.Terminate(ctx); er != nil {
+			t.Errorf("failed to terminate container: :%v", er)
+		}
+	})
 
-	// testing nats connection
+	// testing Nats connection.
+	// You will likely want to wrap your Nats package of choice in an
+	// interface to aid in unit testing and limit lock-in throughout your
+	// codebase but that's out of scope for this example
 	{
 		// opening connection
-		nc, er := nats.Connect(natsConnection)
+		nc, er := nats.Connect(container.URI)
 		if er != nil {
 			t.Error(fmt.Errorf("connecting to nats container failed:\n\t%v\n", er))
 
