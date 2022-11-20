@@ -15,9 +15,13 @@ const (
 	// redis image information
 	redisImageName = "redis"
 	redisImageTag  = "latest"
+
+	// redis test values
+	redisKey   = "some-private-key"
+	redisValue = "55#ou8aAApo#e9kkd"
 )
 
-// CreateRedisContainer
+// createRedisContainer
 // generates a new redis container.
 func createRedisContainer(ctx context.Context) (testcontainers.Container, error) {
 	// container request
@@ -57,16 +61,19 @@ func TestRedisContainer(t *testing.T) {
 		return
 	}
 
-	// opening a new redis connection.
-	client := redis.NewClient(&redis.Options{
-		Addr: redisConnection,
-	})
+	// testing redis container
+	{
+		// opening a new redis connection.
+		client := redis.NewClient(&redis.Options{
+			Addr: redisConnection,
+		})
 
-	// testing storage
-	client.Set(ctx, "my-key", "my-value", 0)
+		// testing storage
+		client.Set(ctx, redisKey, redisValue, 0)
 
-	// get redis pair for test
-	if v := client.Get(ctx, "my-key"); v.String() != "my-value" {
-		t.Error(errors.New("redis container operation failed"))
+		// get redis pair for test
+		if v := client.Get(ctx, redisKey); v.String() != redisValue {
+			t.Error(errors.New("redis container operation failed"))
+		}
 	}
 }
