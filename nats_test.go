@@ -11,6 +11,8 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+// natsContainer
+// implements a generic container of test-containers package.
 type natsContainer struct {
 	testcontainers.Container
 	URI string
@@ -22,8 +24,13 @@ func setupNats(ctx context.Context) (*natsContainer, error) {
 	// container build request
 	req := testcontainers.ContainerRequest{
 		Image:        "nats:latest",
-		ExposedPorts: []string{"4222/tcp"},
-		WaitingFor:   wait.ForLog("Listening for client connections"),
+		ExposedPorts: []string{"4222/tcp", "8222/tcp"},
+		Cmd: []string{
+			"--http_port 8222",
+			"--cluster nats://0.0.0.0:6222",
+			"--cluster_name NATS",
+		},
+		WaitingFor: wait.ForLog("Listening for client connections"),
 	}
 
 	// building a generic container
