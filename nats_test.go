@@ -3,8 +3,10 @@ package test
 import (
 	"context"
 	"fmt"
+	"log"
 	"testing"
 
+	"github.com/nats-io/nats.go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -60,6 +62,29 @@ func TestNatsContainer(t *testing.T) {
 
 	// testing nats connection
 	{
-		
+		// opening connection
+		nc, er := nats.Connect(natsConnection)
+		if er != nil {
+			t.Error(fmt.Errorf("connecting to nats container failed:\n\t%v\n", er))
+
+			return
+		}
+
+		// async subscriber
+		go func() {
+			_, e := nc.Subscribe("foo", func(m *nats.Msg) {
+				log.Printf("Received a message:\n\t%s\n", string(m.Data))
+
+				t.Log("succeed test")
+			})
+			if e != nil {
+				t.Error(fmt.Errorf("subscribe over topic failed:\n\t%v\n", e))
+			}
+		}()
+
+		// publish over topic
+		if e := nc.Publish(natsTopic, []byte(natsValue)); e != nil {
+			t.Error(fmt.Errorf("publish over topic failed:\n\t%v\n", e))
+		}
 	}
 }
