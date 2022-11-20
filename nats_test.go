@@ -72,10 +72,8 @@ func TestNatsContainer(t *testing.T) {
 
 		// async subscriber
 		go func() {
-			_, e := nc.Subscribe("foo", func(m *nats.Msg) {
+			_, e := nc.Subscribe(natsTopic, func(m *nats.Msg) {
 				log.Printf("Received a message:\n\t%s\n", string(m.Data))
-
-				t.Log("succeed test")
 			})
 			if e != nil {
 				t.Error(fmt.Errorf("subscribe over topic failed:\n\t%v\n", e))
