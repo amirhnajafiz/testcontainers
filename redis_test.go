@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	// redis image information
+	// redis docker image information
 	redisImageName = "redis"
 	redisImageTag  = "latest"
 
-	// redis test values
+	// redis test parameters
 	redisKey   = "some-private-key"
 	redisValue = "55#ou8aAApo#e9kkd"
 )
