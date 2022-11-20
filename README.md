@@ -1,9 +1,13 @@
-<h1 align="center">
-	Test Containers
-</h1>
+<p align="center">
+	<img src="assets/test-container.png" alt="logo" width="400" />
+</p>
 
-Example of using Test containers in Golang. Creating a **Nats** cluster with
-containers and test nats cluster with Golang SDK while running unit tests.
+<br />
+
+<p align="center">
+Example of using Test containers in Golang. <br />
+Creating a Nats cluster with containers and test nats cluster with Golang SDK while running unit tests.
+</p>
 
 ## What are test-containers?
 
