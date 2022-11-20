@@ -109,3 +109,7 @@ if e := nc.Publish(natsTopic, []byte(natsValue)); e != nil {
     t.Error(fmt.Errorf("publish over topic failed:\n\t%v\n", e))
 }
 ```
+
+### Test
+
+Run test with ```go test -v ./...``` command.
