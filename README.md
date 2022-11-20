@@ -9,6 +9,8 @@ Example of using Test containers in Golang. <br />
 Creating a Nats cluster with containers and test nats cluster with Golang SDK while running unit tests.
 </p>
 
+<br />
+
 ## What are test-containers?
 
 Test-containers is a package that makes it simple to create and clean up container-based 
